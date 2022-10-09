@@ -1,6 +1,6 @@
 # Structuration of the datas
 
-The file `hebrew_xml_export.xml is a raw export of the whole Hebrew texts of Ben Sira in a single XML file. Each indesign style has been encoded by an XML tag.
+The file `hebrew_xml_export.xml` is a raw export of the whole Hebrew texts of Ben Sira in a single XML file. Each indesign style has been encoded by an XML tag.
 The list of these tags is given and commented in the Hebrew_DTD file.
 
 This single file was been subdivided into nine files representing the nine Hebrew manuscripts of Ben Sira.
