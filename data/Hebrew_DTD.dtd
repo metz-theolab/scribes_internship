@@ -1,0 +1,27 @@
+<!ELEMENT Bensira (chap+)> 
+
+<!-- Paragraph Styles -->
+<!ELEMENT ms (#PCDATA)> <!-- Manuscript sigla -->
+<!ELEMENT chap (#PCDATA)> <!-- chapter -->
+<!ELEMENT col (#PCDATA)> <!-- colomn for a multi column manuscript -->
+<!ELEMENT text (#PCDATA)> <!-- Hebrew Edition -->
+<!ELEMENT margin (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT margin_right (#PCDATA)>  <!-- marginal notation -->
+<!ELEMENT margin_left (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT vacat_prg (#PCDATA)> <!-- a space into the manuscript -->
+
+<!-- Character Styles-->
+
+<!ELEMENT folio (#PCDATA)> <!-- shelfmark of the manuscript and folio number -->
+<!ELEMENT verse_nb (#PCDATA)> <!-- verse (children of chapter) -->
+<!ELEMENT line (#PCDATA)> <!-- line on the manuscript -->
+<!ELEMENT vacat_car (#PCDATA)> <!-- a space into the manuscript -->
+<!ELEMENT greek (#PCDATA)> <!-- greek word or letter -->
+<!ELEMENT reconstructed (#PCDATA)> <!-- Hebrew reconstructed -->
+<!ELEMENT superscript (#PCDATA)> <!-- Hebrew superscript letters or words -->
+<!ELEMENT supralinear (#PCDATA)> <!-- Hebrew supralinear letters or words (I think = superscript) -->
+<!ELEMENT margin_reconstructed (#PCDATA)> <!-- marginal notation reconstructed -->
+<!ELEMENT margin_car (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT margin_infralinear (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT margin_supralinear (#PCDATA)> <!-- marginal notation -->
+
