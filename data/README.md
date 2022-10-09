@@ -18,7 +18,7 @@ This single file was been subdivided into nine files representing the nine Hebre
 - Ms_11QPsa
 - MS_Massada
 
-For parsing, some tags can be ignored:
+**For parsing, some tags can be ignored:**
 - `<col>, <vacat_prg>, <vacat_car>, <folio>, <line>, <greek>, <reconstructed>, <margin_reconstructed>`
 - As a first step, can also be ignorer the tags : `<superscript>, <supralinear>, <margin_infralinear> and <margin_supralinear>`.
 
