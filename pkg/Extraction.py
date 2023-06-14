@@ -4,13 +4,14 @@ from itertools import combinations
 from bs4 import BeautifulSoup
 import re
 from collatex import Collation, collate
-import unicodedata
+#import unicodedata
 from random import *
-
+import pandas as pd
 
 nltk.download('punkt')
 
 ################################################################ CLASS DEFINITIONS
+#=============================================================== VariantFinder
 
 class VariantsFinder:
     """
@@ -39,17 +40,24 @@ class VariantsFinder:
         Gives the variant of a sample verse, by default 1
         Function made by Shehenaz, adapted into method by Prunelle
         """
-        while True:
-            try:
-                witness = choice(self.witnesses)
-                witness.getSVG()
-                break
-            # Catch a weird error that is not understood yet ? Some times the first element of the list works, sometimes it doesnt
-            # TODO : understand why
-            except: 
-                continue
+        witness = choice(self.witnesses)
+        witness.getSVG()
 
-        #self.witnesses[i].getSVG()
+    def getDF(self):
+        """
+        Return the object as a dataframe
+        """
+        witness_as_list = [(x.verse_a, x.verse_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb) for x in self.witnesses]
+        columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse']
+        return pd.DataFrame(witness_as_list, columns=columns)
+    
+    def getLaTeX(self):
+        """
+        Return the object as a dataframe
+        """
+        return self.getDF().to_latex()
+
+#=============================================================== Witness     
 
 class Witness:
     """
@@ -102,21 +110,47 @@ class Witness:
     def getSVG(self):
         """
         Show the collation on the two verses of the witness as a svg
+        Directly printed with Jupyter Notebook
         Method made by Prunelle adapting a code by Shehnaz
         """
         collation = Collation()
         collation.add_plain_witness("A", self.verse_a)
         collation.add_plain_witness("B", self.verse_b)
         # Perform the collation
-        collate(collation, output='svg')
+        collate(collation, output='svg_simple')
+    
+    def getHTML(self):
+        """
+        Show the collation on the two verses of the witness as an html code
+        Directly printed with Jupyter Notebook
+        Method made by Prunelle adapting a code by Shehnaz
+        """
+        collation = Collation()
+        collation.add_plain_witness("A", self.verse_a)
+        collation.add_plain_witness("B", self.verse_b)
+        collate(collation, output='html')
+    
+    def getCSV(self):
+        """
+        Show the collation on the two verses of the witness as a n html code
+        Need to ne printed
+        Method made by Prunelle adapting a code by Shehnaz
+        """
+        collation = Collation()
+        collation.add_plain_witness("A", self.verse_a)
+        collation.add_plain_witness("B", self.verse_b)
+        return(collate(collation, output='csv'))
 
+    def __str__(self):
+        if self.alignment_table:
+            return f"Verse {self.verse_nb} : aligned\n{self.alignment_table}"
+        return f"Verse {self.verse_nb} : non aligned"
+    
+    def __repr__(self):
+        return str(self)
+        
 ############################################################ FUNCTIONS DEFINITIONS
-
-def test():
-    """
-    A little test function to test the pkg stuff
-    """
-    print("test")
+#=========================================================== For information
 
 """
 TO UNDERSTAND THE XML FILES :
@@ -133,6 +167,8 @@ TO UNDERSTAND THE XML FILES :
 <!ELEMENT margin_infralinear (#PCDATA)> <!-- marginal notation -->
 <!ELEMENT margin_supralinear (#PCDATA)> <!-- marginal notation -->
 """
+
+#=========================================================== verse_matching
 
 def verse_matching(fileNames:list, folder:str="") -> list:
     """
@@ -214,6 +250,8 @@ def verse_matching(fileNames:list, folder:str="") -> list:
         chap_matching[combo[0]][combo[1]]=matching_chs_list
         return witnesses
     
+#=========================================================== clean_hebrew_punctuations
+
 def clean_hebrew_punctuations(text:str) -> str:
     """
     Clean a text coming from an ancient hebrew manuscript
