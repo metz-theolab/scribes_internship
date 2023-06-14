@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import re
 from collatex import Collation, collate
 import unicodedata
+from random import *
 
 
 nltk.download('punkt')
@@ -17,45 +18,49 @@ class VariantsFinder:
     Class made by Prunelle
     """
 
-    def __init__(self, fileNames:list):
+    def __init__(self, fileNames:list, folder:str = ""):
         """
         Create an object of type VariantsFinder
         """
         self.fileNames = fileNames
-        #self.witnesses, self.chap_info = verse_matching(fileNames)
-        self.witnesses = verse_matching(fileNames)
+        self.witnesses = verse_matching(fileNames, folder)
         print("# Matching Done")
-
-        """for witness in self.witnesses.values():
-            for verse in witness.values():
-                verse = clean_hebrew_punctuations(verse)
-        print("## Cleaning Done")"""
 
         for witness in self.witnesses:
             witness.cleanWitness()
         print("## Cleaning Done")
 
-        #self.variants = verse_collation(self.witnesses)
         for witness in self.witnesses:
             witness.collateVerse()
         print("### Collation Done")
 
-    def getSampleVariant(self, i:int = 1):
+    def getSampleVariant(self):
         """
         Gives the variant of a sample verse, by default 1
         Function made by Shehenaz, adapted into method by Prunelle
         """
-        self.witnesses[i].getSVG()
+        while True:
+            try:
+                witness = choice(self.witnesses)
+                witness.getSVG()
+                break
+            # Catch a weird error that is not understood yet ? Some times the first element of the list works, sometimes it doesnt
+            # TODO : understand why
+            except: 
+                continue
+
+        #self.witnesses[i].getSVG()
 
 class Witness:
     """
     This class creates object handling a witness for collatex
+    Class made by Prunelle
     """
 
-    def __init__(self, verse_a, verse_b, manuscript_a, manuscript_b, chapter_a, chapter_b, verse_nb):
+    def __init__(self, verse_a:str, verse_b:str, manuscript_a:str, manuscript_b:str, chapter_a:str, chapter_b:str, verse_nb):
         """
-        NEED DOCSTRING
-        Method made by Prunelle
+        Create a witness containing the two different verses and all the chapter information
+        Method made by Prunelle on an idea by Shehnaz
         """
         self.verse_a = verse_a
         self.verse_b = verse_b
@@ -70,7 +75,7 @@ class Witness:
 
     def cleanWitness(self):
         """
-        NEED DOCSTRING
+        This function clean the two verses of the witness
         Method made by Prunelle
         """
         self.verse_a = clean_hebrew_punctuations(self.verse_a)
@@ -78,7 +83,7 @@ class Witness:
 
     def collateVerse(self):
         """
-        NEED DOCSTRING
+        Perform the collation on the two verses of the witness
         Method made by Prunelle adapting a code by Shehnaz
         """
         collation = Collation()
@@ -96,7 +101,7 @@ class Witness:
     
     def getSVG(self):
         """
-        NEED DOCSTRING
+        Show the collation on the two verses of the witness as a svg
         Method made by Prunelle adapting a code by Shehnaz
         """
         collation = Collation()
@@ -113,9 +118,25 @@ def test():
     """
     print("test")
 
-def verse_matching(fileNames):
+"""
+TO UNDERSTAND THE XML FILES :
+<!ELEMENT folio (#PCDATA)> <!-- shelfmark of the manuscript and folio number -->
+<!ELEMENT verse_nb (#PCDATA)> <!-- verse (children of chapter) -->
+<!ELEMENT line (#PCDATA)> <!-- line on the manuscript -->
+<!ELEMENT vacat_car (#PCDATA)> <!-- a space into the manuscript -->
+<!ELEMENT greek (#PCDATA)> <!-- greek word or letter -->
+<!ELEMENT reconstructed (#PCDATA)> <!-- Hebrew reconstructed -->
+<!ELEMENT superscript (#PCDATA)> <!-- Hebrew superscript letters or words -->
+<!ELEMENT supralinear (#PCDATA)> <!-- Hebrew supralinear letters or words (I think = superscript) -->
+<!ELEMENT margin_reconstructed (#PCDATA)> <!-- marginal notation reconstructed -->
+<!ELEMENT margin_car (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT margin_infralinear (#PCDATA)> <!-- marginal notation -->
+<!ELEMENT margin_supralinear (#PCDATA)> <!-- marginal notation -->
+"""
+
+def verse_matching(fileNames:list, folder:str="") -> list:
     """
-    NEED DOCSTRING
+    Read all the XML files and do the verse matching
     Algorithm made by Shehnaz, adapted into function by Prunelle
     """
     soup = dict()
@@ -124,35 +145,24 @@ def verse_matching(fileNames):
     verses = dict()
 
     for currFile in fileNames:
-        with open("WorkDir/"+currFile,encoding="utf8") as fp: #TODO : get rid of the workdir stuff
+        with open(folder+currFile,encoding="utf8") as fp: #TODO : get rid of the workdir stuff
             soup[currFile] = BeautifulSoup(fp,features='xml')
             chs = list()
             verse_list[currFile] = dict()
             verses[currFile] =dict()
+
             for i in soup[currFile].findAll("chap"):
                 ch_string=i.contents[0].strip()
                 chs.append(ch_string) # strip to remove trailing spaces or new line characters
                 verses_list = list()
                 verse = i.findAll("text")
                 verses[currFile][ch_string] = dict()
+
                 for verse_iter in verse:
                     if verse_iter.verse_nb:
                         verse_num=verse_iter.verse_nb.text.strip()
                     verses_list.append(verse_num)
-                    """
-                    <!ELEMENT folio (#PCDATA)> <!-- shelfmark of the manuscript and folio number -->
-                    <!ELEMENT verse_nb (#PCDATA)> <!-- verse (children of chapter) -->
-                    <!ELEMENT line (#PCDATA)> <!-- line on the manuscript -->
-                    <!ELEMENT vacat_car (#PCDATA)> <!-- a space into the manuscript -->
-                    <!ELEMENT greek (#PCDATA)> <!-- greek word or letter -->
-                    <!ELEMENT reconstructed (#PCDATA)> <!-- Hebrew reconstructed -->
-                    <!ELEMENT superscript (#PCDATA)> <!-- Hebrew superscript letters or words -->
-                    <!ELEMENT supralinear (#PCDATA)> <!-- Hebrew supralinear letters or words (I think = superscript) -->
-                    <!ELEMENT margin_reconstructed (#PCDATA)> <!-- marginal notation reconstructed -->
-                    <!ELEMENT margin_car (#PCDATA)> <!-- marginal notation -->
-                    <!ELEMENT margin_infralinear (#PCDATA)> <!-- marginal notation -->
-                    <!ELEMENT margin_supralinear (#PCDATA)> <!-- marginal notation -->
-                    """
+
                     # For now clean the text which might be enclosed in the tags
                     unwanted_tags= ["folio","verse_nb","line","vacat_car","greek","reconstructed","superscript",\
                     "supralinear","margin_reconstructed","margin_car","margin_infralinear",\
@@ -169,32 +179,28 @@ def verse_matching(fileNames):
             chapter[currFile] = chs
 
     chap_matching = dict()
-    #witnesses = dict()
-    #chap_info = dict()
-    #count = 0
     witnesses = []
 
     for combo in combinations(fileNames, 2):  # 2 for pairs, 3 for triplets, etc
         matching_chs_list = []
+
         if combo[0] in chap_matching.keys():
             pass
         else:
             chap_matching[combo[0]] = dict()
+
         for chap_in_file1 in chapter[combo[0]]:
             for chap_in_file2 in chapter[combo[1]]:
                 ch1_num=re.findall(r'\b\d+\b', chap_in_file1)
                 ch2_num=re.findall(r'\b\d+\b', chap_in_file2)
+
                 if ch1_num == ch2_num:
                     matching_chs_list.append([chap_in_file1,chap_in_file2]) 
                     # Lets see if we can find common verses
                     common_verses= set(verse_list[combo[0]][chap_in_file1]).intersection(verse_list[combo[1]][chap_in_file2])
+
                     for com_verse in common_verses:
                         if com_verse:
-                            #witnesses[count] = dict()
-                            #witnesses[count]['A'] = verses[combo[0]][chap_in_file1][com_verse]
-                            #witnesses[count]['B'] = verses[combo[1]][chap_in_file2][com_verse]
-                            #chap_info[count] = (combo[0],chap_in_file1,combo[1],chap_in_file2,com_verse)
-                            #count = count+1;
                             verse_a = verses[combo[0]][chap_in_file1][com_verse]
                             verse_b = verses[combo[1]][chap_in_file2][com_verse]
                             manuscript_a = combo[0]
@@ -206,13 +212,11 @@ def verse_matching(fileNames):
                             witnesses.append(witness)
 
         chap_matching[combo[0]][combo[1]]=matching_chs_list
-        
-        #return witnesses, chap_info
         return witnesses
     
-def clean_hebrew_punctuations(text):
+def clean_hebrew_punctuations(text:str) -> str:
     """
-    NEED DOCSTRING
+    Clean a text coming from an ancient hebrew manuscript
     Function made by Shehnaz
     """
     filtered_text = ''
@@ -224,37 +228,3 @@ def clean_hebrew_punctuations(text):
                 else:
                     filtered_text += char
     return filtered_text
-
-def verse_collation(witnesses):
-    """
-    NEED DOCSTRING
-    Algorithm made by Shehnaz, adapted into function by Prunelle
-    """
-    # Use the collatex library to perform the collation and build the variants
-
-    num_witnesses = len(witnesses)
-    # Lets create an empty dictionary to store the variants
-    variants = dict()
-    # For chapter information we can refer to the dictionary chap_info
-    # The dictionary indexes are same across all the data
-
-    # Lets loop of each witness
-    for witness_ind in range(num_witnesses):
-        # Lets run the collation for each set of witnesses
-        # Create empty dictionary for each element
-        variants[witness_ind] = dict()
-        variants[witness_ind]['A'] = '' # Empty initialisatiom
-        variants[witness_ind]['B'] = ''
-        collation = Collation()
-        collation.add_plain_witness("A", witnesses[witness_ind]['A'])
-        collation.add_plain_witness("B", witnesses[witness_ind]['B'])
-        # Perform the collation
-        alignment_table = collate(collation)
-        # Lets start trying to find the variants
-        for column in alignment_table.columns:
-            if column.variant:
-            # Add to variants the tokens as strings       
-                for manuscript, tokens in column.tokens_per_witness.items():
-                    token_strings = [token.token_string for token in tokens]
-                    variants[witness_ind][manuscript] += ' '.join(token_strings)
-    return variants
