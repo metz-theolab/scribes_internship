@@ -22,29 +22,88 @@ class VariantsFinder:
         Create an object of type VariantsFinder
         """
         self.fileNames = fileNames
-        self.witnesses, self.chap_info = verse_matching(fileNames)
+        #self.witnesses, self.chap_info = verse_matching(fileNames)
+        self.witnesses = verse_matching(fileNames)
         print("# Matching Done")
 
-        for witness in self.witnesses.values():
+        """for witness in self.witnesses.values():
             for verse in witness.values():
                 verse = clean_hebrew_punctuations(verse)
+        print("## Cleaning Done")"""
+
+        for witness in self.witnesses:
+            witness.cleanWitness()
         print("## Cleaning Done")
 
-        self.variants = verse_collation(self.witnesses)
+        #self.variants = verse_collation(self.witnesses)
+        for witness in self.witnesses:
+            witness.collateVerse()
         print("### Collation Done")
 
-    def getSampleVariant(self, x:int = 1):
+    def getSampleVariant(self, i:int = 1):
         """
         Gives the variant of a sample verse, by default 1
         Function made by Shehenaz, adapted into method by Prunelle
         """
+        self.witnesses[i].getSVG()
+
+class Witness:
+    """
+    This class creates object handling a witness for collatex
+    """
+
+    def __init__(self, verse_a, verse_b, manuscript_a, manuscript_b, chapter_a, chapter_b, verse_nb):
+        """
+        NEED DOCSTRING
+        Method made by Prunelle
+        """
+        self.verse_a = verse_a
+        self.verse_b = verse_b
+        self.manuscript_a = manuscript_a
+        self.manuscript_b = manuscript_b
+        self.chapter_a = chapter_a
+        self.chapter_b = chapter_b
+        self.verse_nb = verse_nb
+
+        self.variants = []
+        self.alignment_table = None
+
+    def cleanWitness(self):
+        """
+        NEED DOCSTRING
+        Method made by Prunelle
+        """
+        self.verse_a = clean_hebrew_punctuations(self.verse_a)
+        self.verse_b = clean_hebrew_punctuations(self.verse_b)
+
+    def collateVerse(self):
+        """
+        NEED DOCSTRING
+        Method made by Prunelle adapting a code by Shehnaz
+        """
         collation = Collation()
-        collation.add_plain_witness("A", self.witnesses[x]['A'])
-        collation.add_plain_witness("B", self.witnesses[x]['B'])
-        print("\nManuscript A: " + self.witnesses[x]['A'])
-        print("Manuscript B: " + self.witnesses[x]['B']+"\n")
-        print(self.chap_info[x])
-        collate(collation,output="svg")
+        collation.add_plain_witness("A", self.verse_a)
+        collation.add_plain_witness("B", self.verse_b)
+        # Perform the collation
+        self.alignment_table = collate(collation)
+        # Lets start trying to find the variants
+        for column in self.alignment_table.columns:
+            if column.variant:
+            # Add to variants the tokens as strings       
+                for manuscript, tokens in column.tokens_per_witness.items():
+                    token_strings = [token.token_string for token in tokens]
+                    self.variants.append(token_strings)
+    
+    def getSVG(self):
+        """
+        NEED DOCSTRING
+        Method made by Prunelle adapting a code by Shehnaz
+        """
+        collation = Collation()
+        collation.add_plain_witness("A", self.verse_a)
+        collation.add_plain_witness("B", self.verse_b)
+        # Perform the collation
+        collate(collation, output='svg')
 
 ############################################################ FUNCTIONS DEFINITIONS
 
@@ -110,9 +169,11 @@ def verse_matching(fileNames):
             chapter[currFile] = chs
 
     chap_matching = dict()
-    witnesses = dict()
-    chap_info = dict()
-    count = 0
+    #witnesses = dict()
+    #chap_info = dict()
+    #count = 0
+    witnesses = []
+
     for combo in combinations(fileNames, 2):  # 2 for pairs, 3 for triplets, etc
         matching_chs_list = []
         if combo[0] in chap_matching.keys():
@@ -129,14 +190,25 @@ def verse_matching(fileNames):
                     common_verses= set(verse_list[combo[0]][chap_in_file1]).intersection(verse_list[combo[1]][chap_in_file2])
                     for com_verse in common_verses:
                         if com_verse:
-                            witnesses[count] = dict()
-                            witnesses[count]['A'] = verses[combo[0]][chap_in_file1][com_verse]
-                            witnesses[count]['B'] = verses[combo[1]][chap_in_file2][com_verse]
-                            chap_info[count] = (combo[0],chap_in_file1,combo[1],chap_in_file2,com_verse)
-                            count = count+1;
+                            #witnesses[count] = dict()
+                            #witnesses[count]['A'] = verses[combo[0]][chap_in_file1][com_verse]
+                            #witnesses[count]['B'] = verses[combo[1]][chap_in_file2][com_verse]
+                            #chap_info[count] = (combo[0],chap_in_file1,combo[1],chap_in_file2,com_verse)
+                            #count = count+1;
+                            verse_a = verses[combo[0]][chap_in_file1][com_verse]
+                            verse_b = verses[combo[1]][chap_in_file2][com_verse]
+                            manuscript_a = combo[0]
+                            manuscript_b = combo[1]
+                            chapter_a = chap_in_file1
+                            chapter_b = chap_in_file2
+                            verse_nb = com_verse
+                            witness = Witness(verse_a, verse_b, manuscript_a, manuscript_b, chapter_a, chapter_b, verse_nb)
+                            witnesses.append(witness)
+
         chap_matching[combo[0]][combo[1]]=matching_chs_list
         
-        return witnesses, chap_info
+        #return witnesses, chap_info
+        return witnesses
     
 def clean_hebrew_punctuations(text):
     """
