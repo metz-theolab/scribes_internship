@@ -7,6 +7,7 @@ from collatex import Collation, collate
 #import unicodedata
 from random import *
 import pandas as pd
+from textdistance import levenshtein, hamming
 
 nltk.download('punkt')
 
@@ -35,6 +36,10 @@ class VariantsFinder:
             witness.collateVerse()
         print("### Collation Done")
 
+        for witness in self.witnesses:
+            witness.distance()
+        print("#### Distance Done")
+
     def getSampleVariant(self):
         """
         Gives the variant of a sample verse, by default 1
@@ -47,8 +52,8 @@ class VariantsFinder:
         """
         Return the object as a dataframe
         """
-        witness_as_list = [(x.verse_a, x.verse_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb) for x in self.witnesses]
-        columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse']
+        witness_as_list = [(x.verse_a, x.verse_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb, x.levenshtein, x.hamming) for x in self.witnesses]
+        columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming']
         return pd.DataFrame(witness_as_list, columns=columns)
     
     def getLaTeX(self):
@@ -78,8 +83,11 @@ class Witness:
         self.chapter_b = chapter_b
         self.verse_nb = verse_nb
 
-        self.variants = []
+        self.variants_a = []
+        self.variants_b = []
         self.alignment_table = None
+        self.levenshtein = 0
+        self.hamming = 0
 
     def cleanWitness(self):
         """
@@ -105,7 +113,18 @@ class Witness:
             # Add to variants the tokens as strings       
                 for manuscript, tokens in column.tokens_per_witness.items():
                     token_strings = [token.token_string for token in tokens]
-                    self.variants.append(token_strings)
+                    if (manuscript == 'A'):
+                        self.variants_a.extend(token_strings)
+                    else:
+                        self.variants_b.extend(token_strings)
+
+
+    def distance(self):
+        """
+        A method computing the levenstein and hamming distance between the verses
+        """
+        self.levenshtein = levenshtein("".join(self.variants_a), "".join(self.variants_b))
+        self.hamming = hamming("".join(self.variants_a), "".join(self.variants_b))
     
     def getSVG(self):
         """
@@ -257,12 +276,11 @@ def clean_hebrew_punctuations(text:str) -> str:
     Clean a text coming from an ancient hebrew manuscript
     Function made by Shehnaz
     """
-    filtered_text = ''
-    for char in text:
-        if '\u0591' <= char <= '\u05F4' or '\uFB1D' <= char <= '\uFB4F' or char == '\u0020' or char =='\u0009':
-            if char != '\u059F':  # Exclude this character
-                if char == '\u0009':
-                    filtered_text += '\u0020'
-                else:
-                    filtered_text += char
-    return filtered_text
+    # Replace tab characters with spaces
+    text = text.replace('\t', ' ')
+    # Regex pattern for hebrew text excluding punctuation
+    pattern = r'[^\u0591-\u05F4\uFB1D-\uFB4F ]|[\u05F3\u05F4\u05BE\u05C0\u05C3\u05C2\u05BD\u059F]'
+    # Use re.sub() to replace matched characters with ''
+    output_str = re.sub(pattern, '', text)
+    return output_str
+
