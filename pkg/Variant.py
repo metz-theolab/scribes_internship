@@ -37,6 +37,11 @@ class VariantsFinder:
             witness.distance()
         print("#### Distance Done")
 
+        for witness in self.witnesses:
+            witness.inversion()
+            witness.difference()
+        print("##### Errors Classification Done")
+
     def getSampleVariant(self):
         """
         Gives the variant of a sample verse, by default 1
@@ -48,17 +53,17 @@ class VariantsFinder:
         """
         Return the object as a dataframe
         """
-        witness_as_list = [(x.verse_a, x.verse_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb, x.levenshtein, x.hamming) for x in self.witnesses]
-        columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming']
+        witness_as_list = [(x.verse_a, x.verse_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb, x.levenshtein, x.hamming, x.inv, x.diff) for x in self.witnesses]
+        columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming', 'Inversion', 'Difference']
         return pd.DataFrame(witness_as_list, columns=columns)
     
-    def getMarkdown(self, name:str = "Variant.md"):
+    def getMarkdown(self, name:str = "Variants.md"):
         """
         Return the object as a dataframe
         """
         self.getDF().to_markdown(name)
     
-    def getCSV(self, name:str = "Variant.csv"):
+    def getCSV(self, name:str = "Variants.csv"):
         """
         Return the object as a dataframe
         """
@@ -128,4 +133,3 @@ def verse_matching(fileNames:list, unwanted_tags:list, folder:str="") -> list:
                 witnesses.append(Witness(verse_a, verse_b, combo[0], combo[1], chap_in_file1, chap_in_file2, com_verse))
 
     return witnesses
-
