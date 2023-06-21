@@ -56,11 +56,18 @@ class VariantsFinder:
         columns = ['Verse A', 'Verse B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming']
         return pd.DataFrame(witness_as_list, columns=columns)
     
-    def getLaTeX(self):
+    def getMarkdown(self):
         """
         Return the object as a dataframe
         """
-        return self.getDF().to_latex()
+        return self.getDF().to_markdown("Variant.md")
+    
+    def getCSV(self):
+        """
+        Return the object as a dataframe
+        """
+        return self.getDF().to_csv("Variant.csv")
+
 
 #=============================================================== Witness     
 
