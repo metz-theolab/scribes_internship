@@ -50,6 +50,10 @@ class VariantsFinder:
             witness.difference()
         print("##### Errors Classification Done")
 
+        for witness in self.witnesses:
+            witness.POS()
+        print("###### Part Of Speech Tagging Done")
+
     def getSampleVariant(self):
         """
         Gives the variant of a sample verse, by default 1
@@ -61,8 +65,8 @@ class VariantsFinder:
         """
         Return the object as a dataframe
         """
-        witness_as_list = [(x.verse_a, x.verse_b, x.variants_a, x.variants_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb, x.levenshtein, x.hamming, x.inv, x.diff) for x in self.witnesses]
-        columns = ['Verse A', 'Verse B', 'Variant A', 'Variant B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming', 'Inversion', 'Difference']
+        witness_as_list = [(x.verse_a, x.verse_b, x.variants_a, x.variants_b, x.nb_words_a, x.nb_words_b, x.manuscript_a, x.manuscript_b, x.chapter_a, x.chapter_b, x.verse_nb, x.levenshtein, x.hamming, x.inv, x.diff, x.POS_a, x.POS_b) for x in self.witnesses]
+        columns = ['Verse A', 'Verse B', 'Variant A', 'Variant B', 'Length A', 'Length B', 'Manuscript A', 'Manuscript B', 'Chapter A', 'Chapter B', 'Verse', 'Levenshtein', 'Hamming', 'Inversion', 'Difference', 'POS A', 'POS B']
         return pd.DataFrame(witness_as_list, columns=columns)
     
     def getMarkdown(self, name:str = "Variants.md"):

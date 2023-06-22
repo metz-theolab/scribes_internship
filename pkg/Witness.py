@@ -11,6 +11,9 @@ from collatex import Collation, collate
 from random import *
 from textdistance import levenshtein, hamming
 import difflib
+import stanza
+
+nlp = stanza.Pipeline('he')
 
 ################################################################ CLASS DEFINITIONS
 #=============================================================== Witness     
@@ -34,11 +37,15 @@ class Witness:
 
         self.variants_a = []
         self.variants_b = []
+        self.nb_words_a = []
+        self.nb_words_b = []
         self.alignment_table = None
         self.levenshtein = 0
         self.hamming = 0
         self.inv = ""
         self.diff = ""
+        self.POS_a = ""
+        self.POS_b = ""
 
     ### Computation methods
     def cleanWitness(self):
@@ -67,6 +74,9 @@ class Witness:
                         self.variants_a.extend(token_strings)
                     else:
                         self.variants_b.extend(token_strings)
+        # Compute the number of words in the variants
+        self.nb_words_a = len("".join(self.variants_a).split())
+        self.nb_words_b = len("".join(self.variants_b).split())
 
     def distance(self):
         """
@@ -86,6 +96,24 @@ class Witness:
         A method finding if the two verses are an inversion of each other
         """
         self.diff = diff_texts(self.verse_a, self.verse_b)
+
+    def POS(self):
+        """
+        A method returning the part of speech of the words contained in the variants
+        """
+        doc = nlp(" ".join(self.variants_a))
+        concat_string = ''
+        for sentence in doc.sentences:
+            for word in sentence.words:
+                concat_string += word.text + " : " + word.upos + ','
+        self.POS_a = concat_string
+
+        doc = nlp(" ".join(self.variants_b))
+        concat_string = ''
+        for sentence in doc.sentences:
+            for word in sentence.words:
+                concat_string += word.text + " : " + word.upos + ','
+        self.POS_b = concat_string
     
     ### Export Methods
     def getSVG(self):
