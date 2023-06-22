@@ -1,3 +1,11 @@
+##################################################################################################
+#                                                                                                #
+# Package created by Mayank Mishra, Prunelle Daudré--Treuil and Shehenaz Hossain                 #
+# For the Ben Sira variant analysis Project for the NLP Master of the Lorraine University (2023) #
+# Under the supervision of J.S. Ray and S.Robert                                                 #
+#                                                                                                #
+##################################################################################################
+
 from pkg.Witness import Witness
 
 import nltk

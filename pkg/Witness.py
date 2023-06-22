@@ -1,11 +1,16 @@
-import nltk
+##################################################################################################
+#                                                                                                #
+# Package created by Mayank Mishra, Prunelle Daudré--Treuil and Shehenaz Hossain                 #
+# For the Ben Sira variant analysis Project for the NLP Master of the Lorraine University (2023) #
+# Under the supervision of J.S. Ray and S.Robert                                                 #
+#                                                                                                #
+##################################################################################################
+
 import re
 from collatex import Collation, collate
 from random import *
 from textdistance import levenshtein, hamming
 import difflib
-
-nltk.download('punkt')
 
 ################################################################ CLASS DEFINITIONS
 #=============================================================== Witness     
