@@ -8,7 +8,7 @@
 
 def subdataframe_extractor(df, filename):
     """
-    create subdataframes for all manuscripts
+    Create subdataframes for all manuscripts
     """
     df_update = df[["Manuscript A", "Chapter A","Manuscript B", "Chapter B","Verse A", "Verse B", "Variant A", "Variant B"]]
     df_sub = df_update[(df_update['Manuscript A'] == filename) | (df_update['Manuscript B'] == filename)]
@@ -16,8 +16,9 @@ def subdataframe_extractor(df, filename):
 
 def subdataframe_enhancer(df, filename):
     """
-    refining the subdataframes to fit our requirements (making the first mauscript as b,c,d,e or f, as needed)
+    Refining the subdataframes to fit our requirements
     """
+    df = subdataframe_extractor(df, filename)
     idx = (df['Manuscript B'] == filename)
     df.loc[idx,['Verse A','Verse B']] = df.loc[idx,['Verse B', 'Verse A']].values
     df.loc[idx,['Variant A','Variant B']] = df.loc[idx,['Variant B','Variant A']].values
@@ -28,7 +29,7 @@ def subdataframe_enhancer(df, filename):
 
 def avg_word_len(df):
     """
-    calculate average word length of variants
+    Calculate average word length of variants
     """
     word_count = 0
     sum = 0
@@ -43,7 +44,7 @@ def avg_word_len(df):
 
 def exact_match_per(df):
     """
-    number of times the two witnesses are exactly same
+    Number of times the two witnesses are exactly same
     """
     exact_count = 0
     for text1, text2 in zip(df['Verse A'],df['Verse B']):
@@ -55,7 +56,7 @@ def exact_match_per(df):
 
 def word_addition_per(df):
     """
-    calculating how many times there is a word addition
+    Calculating how many times there is a word addition
     """
     add_count = 0
     for list in df['Variant B']:
@@ -67,7 +68,7 @@ def word_addition_per(df):
 
 def word_deletion_per(df):
     """
-    calculating word deletions 
+    Calculating word deletions 
     """
     add_count = 0
     for list in df['Variant A']:
@@ -79,7 +80,7 @@ def word_deletion_per(df):
 
 def word_repitition_per(df):
     """
-    calculating dittos/repititions of words in witnessess of a manuscript
+    Calculating dittos/repititions of words in witnessess of a manuscript
     """
     count = 0
     for sent in df['Verse A']:
@@ -92,26 +93,24 @@ def word_repitition_per(df):
 
 def inversion_per(df):
     """
-    calculating percentage of inversions in the manuscript
+    Calculating percentage of inversions in the manuscript
     """
     for text1, text2 in zip(df['Verse A'], df['Verse B']):
 
         set1 = set(text1.split())
         set2 = set(text2.split())
         count = 0
-        if set1 == set2 and len(text1.split()) == len(text2.split()): # check if the sentences have same words and no repeating words
+        if (set1 == set2) and (len(text1.split()) == len(text2.split())): 
+            # check if the sentences have same words and no repeating words
             if text1.split() != text2.split(): # check for inversion if not exact matches
                 for i in range(len(text1.split())-2): 
                     if text1.split()[i] == text2.split()[i+1] and text1.split()[i+1] == text2.split()[i]: #check for near inversion when consecutive words are inverted
                         count = count+1
 
-                
-                if count > 0:
-                    perc_inv = (count/len(df['Verse A']))*100
-                    return perc_inv   
- 
-            else:
-                return 'No inversion detected in the manuscript'
+    if count > 0:
+        perc_inv = (count/len(df['Verse A']))*100
+        return perc_inv   
+    return 0
             
 
 
