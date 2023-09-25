@@ -1,0 +1,5 @@
+collatex
+bs4
+python-Levenshtein
+lxml
+ipykernel
