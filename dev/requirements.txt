@@ -1,4 +1,5 @@
 collatex
+pandas
 bs4
 python-Levenshtein
 lxml
